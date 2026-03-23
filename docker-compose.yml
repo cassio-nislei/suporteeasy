@@ -1,0 +1,55 @@
+version: "3.9"
+
+services:
+  redis:
+    image: redis:7-alpine
+    container_name: atera_redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+
+  api:
+    build:
+      context: .
+      dockerfile: apps/api/Dockerfile
+    container_name: atera_api
+    restart: unless-stopped
+    depends_on:
+      - redis
+    environment:
+      NODE_ENV: development
+      PORT: 3001
+      API_PREFIX: api/v1
+      API_DOCS_PATH: api/docs
+      MONGODB_URI: mongodb://admin:Ncm%40647534@104.234.173.105:27017/atera?authSource=admin
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      DISABLE_QUEUES: "false"
+      HEARTBEAT_TIMEOUT_CHECK_INTERVAL_MS: 30000
+      JWT_ACCESS_SECRET: dev_access_secret_change
+      JWT_ACCESS_EXPIRES_IN: 15m
+      JWT_REFRESH_SECRET: dev_refresh_secret_change
+      JWT_REFRESH_EXPIRES_IN: 7d
+      CORS_ORIGIN: http://localhost:3000
+    ports:
+      - "3001:3001"
+
+  web:
+    build:
+      context: .
+      dockerfile: apps/web/Dockerfile
+    container_name: atera_web
+    restart: unless-stopped
+    depends_on:
+      - api
+    environment:
+      NODE_ENV: development
+      NEXT_PUBLIC_APP_URL: http://localhost:3000
+      NEXT_PUBLIC_API_URL: http://localhost:3001/api/v1
+    ports:
+      - "3000:3000"
+
+volumes:
+  redis_data:

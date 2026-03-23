@@ -1,0 +1,31 @@
+{
+  "name": "atera-saas-monorepo",
+  "private": true,
+  "version": "0.1.0",
+  "workspaces": [
+    "apps/api",
+    "apps/web"
+  ],
+  "scripts": {
+    "dev:api": "npm --workspace apps/api run start:dev",
+    "dev:web": "npm --workspace apps/web run dev",
+    "dev:web:3002": "npm --workspace apps/web run dev:3002",
+    "preflight": "powershell -ExecutionPolicy Bypass -File tools/preflight-dev.ps1",
+    "preflight:web:3002": "powershell -ExecutionPolicy Bypass -File tools/preflight-dev.ps1 -WebMode start -WebPort 3002",
+    "seed": "npm --workspace apps/api run seed",
+    "start:web:3002": "npm --workspace apps/web run start:3002",
+    "test:api": "npm --workspace apps/api run test",
+    "test:e2e": "npm --workspace apps/api run test:e2e",
+    "agent:simulator": "node tools/agent-simulator/index.js",
+    "agent:windows": "powershell -ExecutionPolicy Bypass -File tools/windows-agent/launch-agent.ps1"
+  },
+  "devDependencies": {
+    "lodash": "^4.17.21",
+    "yargs": "^17.7.2"
+  },
+  "dependencies": {
+    "@nestjs/jwt": "^11.0.2",
+    "luxon": "^3.7.2",
+    "socket.io-client": "^4.8.3"
+  }
+}
