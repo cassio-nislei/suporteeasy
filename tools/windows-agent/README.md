@@ -27,7 +27,62 @@ Current scope:
 - does not yet implement file transfer, clipboard sync, audio or unattended elevation
 - can use `ffmpeg/gdigrab` as an optional capture backend when available
 
-## Run
+## Installation Methods
+
+### Method 1: Interactive GUI Installer (Recommended)
+
+The easiest way to install with automatic Windows startup and firewall configuration:
+
+```batch
+REM Run as Administrator
+install.bat
+```
+
+This will:
+- ✓ Show a user-friendly GUI for configuration
+- ✓ Configure Windows Firewall rules automatically
+- ✓ Add Windows Defender exclusion
+- ✓ Create a scheduled task for automatic startup at logon
+- ✓ Start the agent immediately after installation
+
+### Method 2: PowerShell Script (Advanced)
+
+For advanced configurations and scripting:
+
+```powershell
+# Run as Administrator
+$params = @{
+  ApiUrl = 'http://localhost:3001/api/v1'
+  Email = 'admin@easyli.local'
+  Password = 'ChangeMe@123'
+  InstallRoot = 'C:\Program Files\Easyli Windows Agent'
+  BridgePort = 37609
+  DisableLocalInputControl = $false
+  SkipDefenderExclusion = $false
+  SkipFirewallConfig = $false
+  SkipStart = $false
+}
+
+.\install-agent-advanced.ps1 @params
+```
+
+### Method 3: MSI Installer (Enterprise Deployment)
+
+Build and distribute as MSI for enterprise deployments:
+
+```powershell
+# Run on a development machine with WiX Toolset installed
+.\build-msi.ps1 -OutputPath './dist'
+```
+
+Then distribute `EasyliWindowsAgent.msi` and install via:
+```batch
+msiexec /i EasyliWindowsAgent.msi
+```
+
+### Method 4: Manual Run (Testing)
+
+For testing without installation:
 
 ```powershell
 $env:EASYLI_API_URL='http://localhost:3001/api/v1'
@@ -42,6 +97,37 @@ Hard-disable local mouse/keyboard injection on machines where Easyli must never 
 $env:EASYLI_DISABLE_LOCAL_INPUT_CONTROL='true'
 npm run agent:windows
 ```
+
+## Installation Features
+
+When using GUI or PowerShell installers, the following are automatically configured:
+
+| Feature | Default | Description |
+|---------|---------|-------------|
+| **Auto-Start** | Enabled | Runs automatically when user logs in |
+| **Firewall Rules** | Configured | Allows inbound connections for remote access |
+| **Defender Exclusion** | Added | Excludes agent directory from antivirus scanning |
+| **Input Control** | Enabled | Allows mouse/keyboard remote control (can be disabled) |
+| **Scheduled Task** | Created | Runs with highest privileges in interactive session |
+| **Port** | 37609 | Local bridge port (configurable) |
+
+## Uninstallation
+
+### If installed via GUI/PowerShell:
+
+```powershell
+# Run as Administrator
+$installRoot = 'C:\Program Files\Easyli Windows Agent'
+& "$installRoot\uninstall-agent.ps1"
+```
+
+### If installed via MSI:
+
+```batch
+msiexec /x EasyliWindowsAgent.msi
+```
+
+Or use Control Panel → Programs → Uninstall a program
 
 ## Useful environment variables
 
