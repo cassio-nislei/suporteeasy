@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
+  <Product
+    Id="*"
+    Name="Easyli Windows Agent"
+    Language="1033"
+    Version="1.0.0.0"
+    Manufacturer="Easyli"
+    UpgradeCode="12345678-1234-1234-1234-123456789012">
+    
+    <Package
+      InstallerVersion="200"
+      Compressed="yes"
+      InstallScope="perMachine"
+      Description="Easyli Windows Agent - Remote Access Service"
+      Comments="Automatic installation and firewall configuration" />
+
+    <Media Id="1" Cabinet="EasyliAgent.cab" EmbedCab="yes" />
+
+    <!-- Directory Structure -->
+    <Directory Id="TARGETDIR" Name="SourceDir">
+      <Directory Id="ProgramFilesFolder">
+        <Directory Id="INSTALLFOLDER" Name="Easyli Windows Agent" />
+      </Directory>
+      <Directory Id="ProgramMenuFolder">
+        <Directory Id="ApplicationProgramsFolder" Name="Easyli Windows Agent" />
+      </Directory>
+    </Directory>
+
+    <!-- Features -->
+    <Feature Id="ProductFeature" Title="Easyli Windows Agent" Level="1">
+      <ComponentRef Id="MainExecutable" />
+      <ComponentRef Id="ConfigurationFiles" />
+      <ComponentRef Id="LaunchScripts" />
+      <ComponentRef Id="ApplicationShortcut" />
+      <ComponentRef Id="UninstallShortcut" />
+    </Feature>
+
+    <!-- Components -->
+    <DirectoryRef Id="INSTALLFOLDER">
+      <Component Id="MainExecutable" Guid="11111111-1111-1111-1111-111111111111">
+        <File Id="NodeExe" Name="node.exe" Source="payload\bin\node.exe" KeyPath="yes" />
+      </Component>
+      
+      <Component Id="ConfigurationFiles" Guid="22222222-2222-2222-2222-222222222222">
+        <File Id="ConfigTemplate" Name="agent-config.template.json" Source="payload\config\agent-config.template.json" />
+        <CreateFolder />
+      </Component>
+      
+      <Component Id="LaunchScripts" Guid="33333333-3333-3333-3333-333333333333">
+        <File Id="InstallScript" Name="install-agent-advanced.ps1" Source="install-agent-advanced.ps1" />
+        <File Id="UninstallScript" Name="uninstall-agent.ps1" Source="uninstall-agent.ps1" />
+        <File Id="LaunchScript" Name="launch-agent.ps1" Source="payload\agent\launch-agent.ps1" />
+        <File Id="MainScript" Name="index.js" Source="payload\agent\index.js" />
+      </Component>
+    </DirectoryRef>
+
+    <!-- Start Menu Shortcuts -->
+    <DirectoryRef Id="ApplicationProgramsFolder">
+      <Component Id="ApplicationShortcut" Guid="44444444-4444-4444-4444-444444444444">
+        <Shortcut
+          Id="UninstallProduct"
+          Name="Uninstall Easyli Windows Agent"
+          Target="[SystemFolder]msiexec.exe"
+          Arguments="/x [ProductCode]" />
+        <RemoveFolder Id="ApplicationProgramsFolder" On="uninstall" />
+        <RegistryValue
+          Root="HKCU"
+          Key="Software\Microsoft\Easyli\WindowsAgent"
+          Name="installed"
+          Type="integer"
+          Value="1"
+          KeyPath="yes" />
+      </Component>
+      
+      <Component Id="UninstallShortcut" Guid="55555555-5555-5555-5555-555555555555">
+        <Shortcut
+          Id="ConfigureAgent"
+          Name="Configure Easyli Windows Agent"
+          Target="[SystemFolder]notepad.exe"
+          Arguments="[INSTALLFOLDER]config\agent-config.json" />
+        <RegistryValue
+          Root="HKCU"
+          Key="Software\Microsoft\Easyli\WindowsAgent"
+          Name="configured"
+          Type="integer"
+          Value="1"
+          KeyPath="yes" />
+      </Component>
+    </DirectoryRef>
+
+    <!-- Installation UI -->
+    <UIRef Id="WixUI_InstallDir" />
+    <WixVariable Id="WixUILicenseRtf" Value="License.rtf" />
+
+    <!-- Custom Actions for PowerShell Installation -->
+    <Binary Id="InstallAgentScript" SourcePath="install-agent-advanced.ps1" />
+    
+    <CustomAction
+      Id="RunInstallScript"
+      BinaryKey="InstallAgentScript"
+      ExeCommand="Install-Agent"
+      Impersonate="no"
+      Return="asyncNoWait"
+      Execute="commit" />
+
+    <!-- Installation Sequence -->
+    <InstallExecuteSequence>
+      <Custom Action="RunInstallScript" After="InstallFinalize">
+        NOT REMOVE
+      </Custom>
+    </InstallExecuteSequence>
+
+    <!-- Registry for Add/Remove Programs -->
+    <Feature Id="ProductFeature" />
+    <Icon Id="ProductIcon" SourceFile="easyli-icon.ico" />
+
+  </Product>
+</Wix>

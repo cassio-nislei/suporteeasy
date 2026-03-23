@@ -7,7 +7,9 @@
     "dev:3002": "next dev -H 0.0.0.0 -p 3002",
     "build": "next build",
     "start": "next start -H 0.0.0.0 -p 3000",
-    "start:3002": "next start -H 0.0.0.0 -p 3002"
+    "start:3002": "next start -H 0.0.0.0 -p 3002",
+    "type-check": "tsc --noEmit",
+    "check": "npm run type-check && npm run build"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.1",
